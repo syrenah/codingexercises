@@ -30,13 +30,18 @@ class Bird:
     def describe(self):
         print(f"{self.name} has a {self.__hatColor} hat")
 
+    def __enter__(self):
+        print("Entering...")
+        return self
 
+    def __exit__(self, exc_type, exc_value, traceback):
+        print("Exiting...")
 class Chicken(Bird):
     def __init__(self):
           super().__init__("Bruno")
           self.talk()
-        #   talk()  
-        # needs self.talk() to access methods in a class
+          self.frolic()
+        #   talk()   # needs self.talk() to access methods in a class
     @property
     def name(self):
         return self._name
