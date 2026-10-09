@@ -1,0 +1,2 @@
+This text replaced the old contents.
+This line was appended.

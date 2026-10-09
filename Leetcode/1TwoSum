@@ -1,0 +1,34 @@
+class Solution:
+    @staticmethod
+    def twoSum(nums: list[int], target: int) -> list[int] | None:
+         # example: [3,2,4]
+         # seen = {3: 0, 2: 1 , 4: 2}
+         seen = {}
+        
+         for index, number in enumerate(nums): #O(n)
+             diff  = target-number
+             if diff not in seen:  # is diff a key in seen, with an index value?
+                seen[number] = index  
+             else : # is in seen 
+                diff_index = seen[diff]
+                return [diff_index,index] # key is 
+
+
+if __name__ == "__main__":
+    numbers_input = input("Enter numbers separated by spaces or commas: ")
+    target_input = input("Enter the target: ")
+
+    try:
+        numbers = [int(value) for value in numbers_input.replace(",", " ").split()]
+        target = int(target_input)
+    except ValueError:
+        print("Please enter whole numbers.")
+        raise SystemExit(1)
+    solution = Solution()
+    
+    result = Solution.twoSum(numbers, target)
+    result2 = solution.twoSum(numbers, target)
+    
+    print(f"Matching indices: {result}")
+    print(f"Matching indices: {result2}")
+             
