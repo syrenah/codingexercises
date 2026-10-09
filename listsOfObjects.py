@@ -11,7 +11,7 @@ chickens = [
 
 for chicken, (name, shoe_size) in zip(
     chickens,
-    [("Bruno", 8), ("Penny", 10), ("Cluck", 12), ("Daisy", 9)],
+    [ ("Chinthu", 10), ("Cluck", 12), ("Cheep", 9)],
 ):
     chicken.name = name
     chicken.shoeSize = shoe_size
@@ -36,7 +36,7 @@ for chicken in chickens:
     
     print(vars(chicken).keys())  #<class 'dict_keys'>
     print(type(vars(chicken).keys()) ) 
-    
+
 mychicken = Chicken()
 with mychicken as c:
     print(f"Inside the with block: {c.name}")
