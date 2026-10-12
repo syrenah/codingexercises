@@ -64,7 +64,13 @@ def solution(nums1, nums2):
         num1_index = (   low_num1_index + high_num1_index  ) // 2 
         #This calculates the midpoint of the remaining possible partition positions in the first (shorter) array
         num2_index = left_partition_size - num1_index
-        
+        #num2_index and num1_index are complementary, meaning that they always add up to the total size of the left partition.
+        #they are where the 2 sorted arrays are split 
+        print(f"nums1 left partition: {nums1[:num1_index]}")
+        print(f"nums1 right partition: {nums1[num1_index:]}")
+        print(f"nums2 left partition: {nums2[:num2_index]}")
+        print(f"nums2 right partition: {nums2[num2_index:]}")
+        print(f"**************************************")
         # START Getting values at the edges of the partiotions
         # when a partition leaves one side of an array empty, the algorithm uses an infinity placeholder for that missing boundary value:
         num1_value_low = (float("-inf")    if num1_index == 0                         else nums1[num1_index - 1]  )
@@ -91,8 +97,8 @@ def solution(nums1, nums2):
     raise ValueError("Both input arrays must be sorted.")
 
 if __name__ == "__main__":
-    nums1 = [1, 3]
+    nums1 = [1, 3,4,5]
 
-    nums2 = [2]
+    nums2 = [2, 6, 7, 8, 9]
     median = solution(nums1, nums2)
     print(f"The median of {nums1} and {nums2} is: {median}")

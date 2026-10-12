@@ -6,6 +6,7 @@ class Bird:
         self.name=name
         self.__shoeSize = shoeSize
         self.__hatColor = hatColor
+        self._weight = "1apple"
 
     def talk(self):
         print("cheep")
