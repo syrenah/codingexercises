@@ -1,34 +1,29 @@
 import statistics 
-
 numbers = [3, 1, 5, 2, 4]
 result = statistics.median(numbers)
 #regular binary search, but we are searching for the median of two sorted arrays. 
 def binary_search(nums, target):
     left = 0
     right = len(nums) - 1
-
     while left <= right:
         mid = (left + right) // 2
-
         if nums[mid] == target:
             return mid
         elif nums[mid] < target:
             left = mid + 1
         else:
             right = mid - 1
-
     return -1
 
-
-def median_if_partition_valid( num1_value_low : float, num2_value_high : float, num1_value_high : float, num2_value_low : float,  total_count : int,):
+def median_if_partition_valid( num1_left_max : float, num2_left_max : float, num1_right_min : float, num2_right_min : float,  total_count : int,):
     #receives those infinity values as placeholders for missing partition boundaries. 
 
     print(bool(total_count % 2))
     if total_count % 2: #total is odd, the median is the average of the two middle values.
-        return max(num1_value_low, num2_value_high) # so if num1_value_low is infinity, then num2_value_high is the median, and vice versa.
+        return max(num1_left_max, num2_left_max) # so if num1_left_max is infinity, then num2_left_max is the median, and vice versa.
     return (
-        max(num1_value_low, num2_value_high)
-        + min(num1_value_high, num2_value_low)
+        max(num1_left_max, num2_left_max)
+        + min(num1_right_min, num2_right_min)
     ) / 2
 
 
@@ -66,30 +61,33 @@ def solution(nums1, nums2):
         num2_index = left_partition_size - num1_index
         #num2_index and num1_index are complementary, meaning that they always add up to the total size of the left partition.
         #they are where the 2 sorted arrays are split 
-        print(f"nums1 left partition: {nums1[:num1_index]}")
+        print(f"nums1 left(smaller) partition: {nums1[:num1_index]}")
         print(f"nums1 right partition: {nums1[num1_index:]}")
         print(f"nums2 left partition: {nums2[:num2_index]}")
         print(f"nums2 right partition: {nums2[num2_index:]}")
         print(f"**************************************")
         # START Getting values at the edges of the partiotions
         # when a partition leaves one side of an array empty, the algorithm uses an infinity placeholder for that missing boundary value:
-        num1_value_low = (float("-inf")    if num1_index == 0                         else nums1[num1_index - 1]  )
+        num1_left_max = (float("-inf")    if num1_index == 0                         else nums1[num1_index - 1]  )
                                                                                                        # its ==0 so we cant subtract 1 so we set it to negative infinity                              
         # negative infinity is used for the left value of the first array when the partition is at the beginning, 
         # This ensures that comparisons can still be made without running into index errors.
-        num1_value_high = (float("inf")    if num1_index == shorter_list_length       else nums1[num1_index] )
+        num1_right_min = (float("inf")    if num1_index == shorter_list_length       else nums1[num1_index] )
         # positive infinity is used for the right value of the first array when the partition is at the end. 
-        num2_value_high = (float("-inf")   if num2_index == 0                        else nums2[num2_index - 1] )
-        num2_value_low = (float("inf")   if num2_index == longer_list_length      else nums2[num2_index]
+        num2_left_max = (float("-inf")   if num2_index == 0                        else nums2[num2_index - 1] )
+        num2_right_min = (float("inf")   if num2_index == longer_list_length      else nums2[num2_index]
         )
-        # print(num1_value_low,num2_value_high,num1_value_high,num2_value_low)
+        print(num1_left_max)
+        print(num2_left_max)
+        print(num1_right_min)
+        print(num2_right_min)
         # END Getting values at the edges of the partiotions
 
-        if (  num1_value_low <= num2_value_low  and num2_value_high <= num1_value_high     ):
+        if (  num1_left_max <= num2_right_min  and num2_left_max <= num1_right_min     ):
             #we are comparing the values at the edges of the partitions to ensure that all elements in the left partitions are less than or equal to all elements in the right partitions.
-            return median_if_partition_valid( num1_value_low,num2_value_high,num1_value_high,num2_value_low,total_count)
+            return median_if_partition_valid( num1_left_max,num2_left_max,num1_right_min,num2_right_min,total_count)
 
-        if num1_value_low > num2_value_low:
+        if num1_left_max > num2_right_min:
             high_num1_index = num1_index - 1  #moving the high index down to search the left side of the first array for a valid partition.
         else:
             low_num1_index = num1_index + 1 #moving the low index up to search the right side of the first array for a valid partition.
