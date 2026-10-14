@@ -68,10 +68,11 @@ def solution(nums1, nums2):
         print(f"**************************************")
         # START Getting values at the edges of the partiotions
         # when a partition leaves one side of an array empty, the algorithm uses an infinity placeholder for that missing boundary value:
-        num1_left_max = (float("-inf")    if num1_index == 0                         else nums1[num1_index - 1]  )
+        num1_left_max = (float("-inf")    if num1_index == 0                         else nums1[num1_index - 1]  ) # max num1 value on left(smaller) side -inf if []
                                                                                                        # its ==0 so we cant subtract 1 so we set it to negative infinity                              
         # negative infinity is used for the left value of the first array when the partition is at the beginning, 
         # This ensures that comparisons can still be made without running into index errors.
+        #smalles val left in num1 on bigger right side
         num1_right_min = (float("inf")    if num1_index == shorter_list_length       else nums1[num1_index] )
         # positive infinity is used for the right value of the first array when the partition is at the end. 
         num2_left_max = (float("-inf")   if num2_index == 0                        else nums2[num2_index - 1] )
@@ -82,7 +83,17 @@ def solution(nums1, nums2):
         print(num1_right_min)
         print(num2_right_min)
         # END Getting values at the edges of the partiotions
-
+        # nums1 left(smaller) partition: [1, 3, 4, 5]   /
+        # nums1 right partition:                       /  []
+        # nums2 left partition:                [2]    /
+        # nums2 right partition:                     /    [6, 7, 8, 9]
+        # **************************************
+        #                                        5    /
+        #                                        2  /
+        #                                          /    inf
+        #                                         /  6
+        # True
+        # The median of                   [1, 3, 4, 5] and [2, 6, 7, 8, 9] is: 5
         if (  num1_left_max <= num2_right_min  and num2_left_max <= num1_right_min     ):
             #we are comparing the values at the edges of the partitions to ensure that all elements in the left partitions are less than or equal to all elements in the right partitions.
             return median_if_partition_valid( num1_left_max,num2_left_max,num1_right_min,num2_right_min,total_count)
