@@ -1,8 +1,6 @@
 from cute_bird_class_stuff import Chicken
 import inspect
-# Find routines (functions and methods) defined on the str type
-# string_methods = inspect.getmembers(str, inspect.isroutine)
-# print([name for name, method in string_methods])
+
 class Pet:
     kind = "animal"
     @property

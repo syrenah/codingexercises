@@ -1,19 +1,19 @@
 import statistics 
 numbers = [3, 1, 5, 2, 4]
 result = statistics.median(numbers)
-#regular binary search, but we are searching for the median of two sorted arrays. 
-def binary_search(nums, target):
-    left = 0
-    right = len(nums) - 1
-    while left <= right:
-        mid = (left + right) // 2
-        if nums[mid] == target:
-            return mid
-        elif nums[mid] < target:
-            left = mid + 1
-        else:
-            right = mid - 1
-    return -1
+# #regular binary search, but we are searching for the median of two sorted arrays. 
+# def binary_search(nums, target):
+#     left = 0
+#     right = len(nums) - 1
+#     while left <= right:
+#         mid = (left + right) // 2
+#         if nums[mid] == target:
+#             return mid
+#         elif nums[mid] < target:
+#             left = mid + 1
+#         else:
+#             right = mid - 1
+#     return -1
 
 def median_if_partition_valid( num1_left_max : float, num2_left_max : float, num1_right_min : float, num2_right_min : float,  total_count : int,):
     #receives those infinity values as placeholders for missing partition boundaries. 
@@ -61,11 +61,11 @@ def solution(nums1, nums2):
         num2_index = left_partition_size - num1_index
         #num2_index and num1_index are complementary, meaning that they always add up to the total size of the left partition.
         #they are where the 2 sorted arrays are split 
-        print(f"nums1 left(smaller) partition: {nums1[:num1_index]}")
-        print(f"nums1 right partition: {nums1[num1_index:]}")
-        print(f"nums2 left partition: {nums2[:num2_index]}")
-        print(f"nums2 right partition: {nums2[num2_index:]}")
-        print(f"**************************************")
+        # print(f"nums1 left(smaller) partition: {nums1[:num1_index]}")
+        # print(f"nums1 right partition: {nums1[num1_index:]}")
+        # print(f"nums2 left partition: {nums2[:num2_index]}")
+        # print(f"nums2 right partition: {nums2[num2_index:]}")
+        # print(f"**************************************")
         # START Getting values at the edges of the partiotions
         # when a partition leaves one side of an array empty, the algorithm uses an infinity placeholder for that missing boundary value:
         num1_left_max = (float("-inf")    if num1_index == 0                         else nums1[num1_index - 1]  ) # max num1 value on left(smaller) side -inf if []
@@ -78,10 +78,10 @@ def solution(nums1, nums2):
         num2_left_max = (float("-inf")   if num2_index == 0                        else nums2[num2_index - 1] )
         num2_right_min = (float("inf")   if num2_index == longer_list_length      else nums2[num2_index]
         )
-        print(num1_left_max)
-        print(num2_left_max)
-        print(num1_right_min)
-        print(num2_right_min)
+        # print(num1_left_max)
+        # print(num2_left_max)
+        # print(num1_right_min)
+        # print(num2_right_min)
         # END Getting values at the edges of the partiotions
         # nums1 left(smaller) partition: [1, 3, 4, 5]   /
         # nums1 right partition:                       /  []
