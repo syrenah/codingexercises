@@ -18,8 +18,8 @@ class URLBuilder:
 
     def build(self) -> str:
         path = "/" + "/".join(self.path_parts) if self.path_parts else ""
-        query = urlencode(self.query_params)
-        return urlunsplit((self.scheme, self.host, path, query, ""))
+     
+        return urlunsplit((self.scheme, self.host, path, urlencode(self.query_params), ""))
 
 if __name__ == "__main__":
     url = (
