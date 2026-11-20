@@ -8,28 +8,24 @@ def solution(arr=[]):
    
    while sc <=ec and sr <=er:
 
-       #left > right
-       for x in range(sc,ec+1):
+       for x in range(sc,ec+1):# tarversing horizonal accross the top row
            print(arr[sr][x])
 
        sr+=1 #killed the top row
 
-       #top > bottom (leftside) left most column
-       for x in range(sr,er+1):
+       for x in range(sr,er+1): # traversing vertical down the right column
            print(arr[x][ec])
 
        ec-=1 # moving the right column left
 
-       # right > left (bottom row)
        if sr <= er:
-           for x in range(ec,sc-1,-1):
+           for x in range(ec,sc-1,-1): #traversing horizontal across the bottom row
                print(arr[er][x])
 
            er-=1 # moving the bottom row up
 
-         # bottom > top (left side)
        if sc <= ec:
-            for x in range(er,sr-1,-1):
+            for x in range(er,sr-1,-1): # traversing vertical up the left column
                 print(arr[x][sc])
     
             sc+=1 #moving the left column right

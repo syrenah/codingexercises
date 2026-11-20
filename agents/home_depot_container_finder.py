@@ -7,27 +7,39 @@ from urllib.parse import urlsplit, urlunsplit
 
 
 SEARCH_RETRIES = 3
-GALLON_PATTERN = re.compile(
-    r"\b(\d+(?:\.\d+)?)\s*-?\s*(?:gal(?:lon)?s?)\b", re.IGNORECASE
+SIZE_PATTERN = re.compile(
+    r"\b(\d+(?:\.\d+)?)\s*-?\s*"
+    r"(gal(?:lon)?s?|qt\.?|quarts?|cu\.?\s*ft\.?|cubic\s+(?:feet|foot))\b",
+    re.IGNORECASE,
 )
 PRICE_PATTERN = re.compile(r"\$\s*([\d,]+(?:\.\d{1,2})?)")
-GALLON_SIZES = (5, 12, 17, 27, 38, 40, 50, 55)
+SEARCH_QUERIES = (
+    "Home Depot plastic storage tote capacity",
+    "Home Depot plastic storage bin capacity",
+    "Home Depot storage box tote size",
+)
 
 
 @dataclass(frozen=True)
 class Product:
     title: str
-    gallons: float
+    size: str
     price: float
     url: str
 
-    @property
-    def price_per_gallon(self) -> float:
-        return self.price / self.gallons
+
+def _size_key(match: re.Match[str]) -> tuple[float, str]:
+    amount = float(match.group(1))
+    unit = match.group(2).lower()
+    if unit.startswith("gal"):
+        return amount, "gal"
+    if unit.startswith("qt") or unit.startswith("quart"):
+        return amount, "qt"
+    return amount, "cu ft"
 
 
 def parse_product(title: str, description: str, url: str) -> Product | None:
-    """Return a Home Depot storage product when its size and price are explicit."""
+    """Return a Home Depot storage product with an explicit size and price."""
     parsed_url = urlsplit(url)
     hostname = (parsed_url.hostname or "").lower()
     if hostname != "homedepot.com" and not hostname.endswith(".homedepot.com"):
@@ -39,20 +51,23 @@ def parse_product(title: str, description: str, url: str) -> Product | None:
     if not re.search(r"\b(tote|bin|storage box)\b", text, re.IGNORECASE):
         return None
 
-    capacity_match = GALLON_PATTERN.search(title) or GALLON_PATTERN.search(
+    capacity_match = SIZE_PATTERN.search(title) or SIZE_PATTERN.search(
         description
     )
     if capacity_match is None:
         return None
 
-    gallons = float(capacity_match.group(1))
+    product_size = _size_key(capacity_match)
+    size_label = f"{product_size[0]:g} {product_size[1]}"
     price = None
     sentences = re.split(
-        r"(?<!gal)(?<=[.!?])\s+", description, flags=re.IGNORECASE
+        r"(?<!gal\.)(?<!qt\.)(?<!ft\.)(?<=[.!?])\s+(?!ft\b)",
+        description,
+        flags=re.IGNORECASE,
     )
     for sentence in sentences:
-        for sentence_capacity in GALLON_PATTERN.finditer(sentence):
-            if float(sentence_capacity.group(1)) != gallons:
+        for sentence_size in SIZE_PATTERN.finditer(sentence):
+            if _size_key(sentence_size) != product_size:
                 continue
             price_match = PRICE_PATTERN.search(sentence)
             if price_match is not None:
@@ -62,17 +77,24 @@ def parse_product(title: str, description: str, url: str) -> Product | None:
             break
     if price is None:
         sentences = re.split(
-            r"(?<!gal)(?<=[.!?])\s+", title, flags=re.IGNORECASE
+            r"(?<!gal\.)(?<!qt\.)(?<!ft\.)(?<=[.!?])\s+(?!ft\b)",
+            title,
+            flags=re.IGNORECASE,
         )
         for sentence in sentences:
-            if GALLON_PATTERN.search(sentence) and PRICE_PATTERN.search(sentence):
-                price_match = PRICE_PATTERN.search(sentence)
+            sentence_size = SIZE_PATTERN.search(sentence)
+            price_match = PRICE_PATTERN.search(sentence)
+            if (
+                sentence_size is not None
+                and _size_key(sentence_size) == product_size
+                and price_match is not None
+            ):
                 price = float(price_match.group(1).replace(",", ""))
                 break
     if price is None:
         return None
 
-    if gallons <= 0 or price <= 0:
+    if product_size[0] <= 0 or price <= 0:
         return None
 
     path_parts = parsed_url.path.rstrip("/").split("/")
@@ -82,18 +104,17 @@ def parse_product(title: str, description: str, url: str) -> Product | None:
     canonical_url = urlunsplit(
         (parsed_url.scheme, parsed_url.netloc, parsed_url.path, "", "")
     )
-    return Product(clean_title, gallons, price, canonical_url)
+    return Product(clean_title, size_label, price, canonical_url)
 
 
 def find_products(max_results: int) -> list[Product]:
-    """Search web-indexed Home Depot product pages for totes and storage bins."""
+    """Search Home Depot tote/bin listings and use sizes stated on each listing."""
     from ddgs import DDGS
     from ddgs.exceptions import DDGSException
 
     products_by_url: dict[str, Product] = {}
     search = DDGS()
-    for gallons in GALLON_SIZES:
-        query = f"Home Depot plastic storage tote {gallons} gallon price"
+    for query in SEARCH_QUERIES:
         for attempt in range(SEARCH_RETRIES):
             try:
                 results = search.text(query, max_results=max_results)
@@ -109,7 +130,7 @@ def find_products(max_results: int) -> list[Product]:
                     ) from error
                 if attempt + 1 == SEARCH_RETRIES:
                     warnings.warn(
-                        f"Skipping {gallons}-gallon search after "
+                        f"Skipping query {query!r} after "
                         f"{SEARCH_RETRIES} timeout attempts: {error}",
                         RuntimeWarning,
                     )
@@ -128,14 +149,14 @@ def find_products(max_results: int) -> list[Product]:
 
     return sorted(
         products_by_url.values(),
-        key=lambda product: product.price_per_gallon,
+        key=lambda product: product.price,
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Find Home Depot plastic storage totes and bins ranked by price per gallon."
+            "Find Home Depot plastic storage totes and bins ranked by listed price."
         )
     )
     parser.add_argument(
@@ -151,16 +172,15 @@ def main() -> None:
     products = find_products(args.max_results)
 
     if not products:
-        print("No Home Depot tote/bin listings with a clear gallon size and price found.")
+        print("No Home Depot tote/bin listings with a clear size and price found.")
         return
 
-    print("Home Depot storage totes and bins, ranked by price per gallon:")
+    print("Home Depot storage totes and bins, ranked by listed price:")
     print("Prices and availability may change; these are web-search results.")
     for product in products:
         print(
             f"\n{product.title}\n"
-            f"  Size: {product.gallons:g} gal | Price: ${product.price:.2f} | "
-            f"${product.price_per_gallon:.2f}/gal\n"
+            f"  Size: {product.size} | Price: ${product.price:.2f}\n"
             f"  {product.url}"
         )
 
